@@ -29,6 +29,7 @@ The first step is to ensure the MacBook Pro itself can connect to your OpenVPN s
        - Set to **Yes** if you want VPN clients to access devices on your home LAN (e.g., NAS, other computers) while connected to the VPN.
        - Set to **No** if you only want internet traffic through the VPN and no access to your home LAN via the tunnel.
      - **MSS Clamping (Recommended):** If your ASUS router's OpenVPN server settings allow it, ensure it's configured to perform MSS clamping (e.g., a `mssfix` directive on the server side). While we'll add it to the client, it's ideal for the server to handle this.
+     - **Compression (For Performance)**: Set to Disabled or None as it adds unnecessary overhead.
 
 2. **Prepare OpenVPN Client (`.ovpn`) File for Tunnelblick:**
 
@@ -63,6 +64,27 @@ The first step is to ensure the MacBook Pro itself can connect to your OpenVPN s
        ```
 
        - **Explanation:** This increases the window of acceptable packet IDs (to 512) and the time (to 60 seconds) that a packet ID remains valid, making the connection more tolerant of network latency, packet reordering, and delays common on unstable networks.
+
+     - **Compression (For Performance):** To reduce overhead, comment out any lines like the following:
+
+       ```system
+       # for OpenVPN 2.4 or older
+       ;comp-lzo yes
+       # for OpenVPN 2.4 or newer
+       ;compress lzo
+       ```
+
+     - **Buffer Sizes and Fast I/O (For Performance):** To potentially improve throughput, especially on high-latency links, add these lines:
+
+       ```system
+       sndbuf 524288
+       rcvbuf 524288
+       fast-io
+       ```
+
+       - **Explanation:**
+         - `sndbuf` and `rcvbuf` increase the send and receive buffer sizes respectively, allowing more data to be in transit, which can help with throughput on connections with higher latency.
+         - `fast-io` is a client-side optimization that allows OpenVPN to perform reads and writes to the tunnel device more efficiently, reducing latency and potentially increasing throughput.
 
 3. **Install and Configure Tunnelblick:**
 
